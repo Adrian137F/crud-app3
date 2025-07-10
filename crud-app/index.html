@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - CRUD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(86, 171, 47, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 65, 108, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: black;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .user-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .user-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .user-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .user-card p {
+            margin-bottom: 5px;
+            color: #666;
+        }
+
+        .user-card .actions {
+            margin-top: 15px;
+            justify-content: flex-end;
+        }
+
+        .user-card .btn {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c62828;
+        }
+
+        .success {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .view-toggle {
+            margin-bottom: 20px;
+        }
+
+        .view-toggle button {
+            margin-right: 10px;
+        }
+
+        .view-toggle button.active {
+            background: #667eea;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .users-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Gestión de Usuarios</h1>
+            <p>Sistema CRUD completo para administrar usuarios</p>
+        </div>
+
+        <div class="main-content">
+            <div class="actions">
+                <button class="btn btn-primary" onclick="showAddModal()">➕ Agregar Usuario</button>
+                <button class="btn btn-success" onclick="loadUsers()">🔄 Actualizar Lista</button>
+            </div>
+
+            <div class="view-toggle">
+                <button class="btn btn-primary active" onclick="toggleView('cards')">📋 Vista Tarjetas</button>
+                <button class="btn btn-primary" onclick="toggleView('table')">📊 Vista Tabla</button>
+            </div>
+
+            <div id="message"></div>
+            <div id="loading" class="loading" style="display: none;">Cargando...</div>
+            
+            <div id="cards-view" class="users-grid"></div>
+            
+            <div id="table-view" class="table-container" style="display: none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Edad</th>
+                            <th>Teléfono</th>
+                            <th>Ciudad</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar/editar usuario -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle">Agregar Usuario</h2>
+            <form id="userForm">
+                <div class="form-group">
+                    <label for="nombre">Nombre *</label>
+                    <input type="text" id="nombre" name="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="edad">Edad</label>
+                    <input type="number" id="edad" name="edad" min="0" max="120">
+                </div>
+                <div class="form-group">
+                    <label for="telefono">Teléfono</label>
+                    <input type="tel" id="telefono" name="telefono">
+                </div>
+                <div class="form-group">
+                    <label for="ciudad">Ciudad</label>
+                    <input type="text" id="ciudad" name="ciudad">
+                </div>
+                <div class="actions">
+                    <button type="submit" class="btn btn-success">💾 Guardar</button>
+                    <button type="button" class="btn btn-danger" onclick="closeModal()">❌ Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentView = 'cards';
+        let editingUserId = null;
+
+        // Cargar usuarios al iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUsers();
+        });
+
+        // Configurar modal
+        const modal = document.getElementById('userModal');
+        const span = document.getElementsByClassName('close')[0];
+        span.onclick = closeModal;
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        function toggleView(view) {
+            currentView = view;
+            const cardsView = document.getElementById('cards-view');
+            const tableView = document.getElementById('table-view');
+            const buttons = document.querySelectorAll('.view-toggle button');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            if (view === 'cards') {
+                cardsView.style.display = 'grid';
+                tableView.style.display = 'none';
+                buttons[0].classList.add('active');
+            } else {
+                cardsView.style.display = 'none';
+                tableView.style.display = 'block';
+                buttons[1].classList.add('active');
+            }
+        }
+
+        function showMessage(message, type = 'success') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = `<div class="${type}">${message}</div>`;
+            setTimeout(() => {
+                messageDiv.innerHTML = '';
+            }, 3000);
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        async function loadUsers() {
+            showLoading();
+            try {
+                const response = await fetch('/api/usuarios');
+                const users = await response.json();
+                
+                if (currentView === 'cards') {
+                    displayUsersCards(users);
+                } else {
+                    displayUsersTable(users);
+                }
+            } catch (error) {
+                showMessage('Error al cargar usuarios: ' + error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function displayUsersCards(users) {
+            const container = document.getElementById('cards-view');
+            
+            if (users.length === 0) {
+                container.innerHTML = '<div class="loading">No hay usuarios registrados</div>';
+                return;
+            }
+
+            container.innerHTML = users.map(user => `
+                <div class="user-card">
+                    <h3>${user.nombre}</h3>
+                    <p><strong>📧 Email:</strong> ${user.email}</p>
+                    <p><strong>🎂 Edad:</strong> ${user.edad || 'No especificada'}</p>
+                    <p><strong>📱 Teléfono:</strong> ${user.telefono || 'No especificado'}</p>
+                    <p><strong>🏙️ Ciudad:</strong> ${user.ciudad || 'No especificada'}</p>
+                    <p><strong>📅 Registro:</strong> ${new Date(user.created_at).toLocaleDateString()}</p>
+                    <div class="actions">
+                        <button class="btn btn-warning" onclick="editUser(${user.id})">✏️ Editar</button>
+                        <button class="btn btn-danger" onclick="deleteUser(${user.id})">🗑️ Eliminar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function displayUsersTable(users) {
+            const tbody = document.getElementById('users-table-body');
+            
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No hay usuarios registrados</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${user.nombre}</td>
+                    <td>${user.email}</td>
+                    <td>${user.edad || '-'}</td>
+                    <td>${user.telefono || '-'}</td>
+                    <td>${user.ciudad || '-'}</td>
+                    <td>
+                        <button class="btn btn-warning" onclick="editUser(${user.id})">✏️ Editar</button>
+                        <button class="btn btn-danger" onclick="deleteUser(${user.id})">🗑️ Eliminar</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showAddModal() {
+            document.getElementById('modalTitle').textContent = 'Agregar Usuario';
+            document.getElementById('userForm').reset();
+            editingUserId = null;
+            modal.style.display = 'block';
+        }
+
+        async function editUser(id) {
+            try {
+                const response = await fetch(`/api/usuarios/${id}`);
+                const user = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('modalTitle').textContent = 'Editar Usuario';
+                    document.getElementById('nombre').value = user.nombre;
+                    document.getElementById('email').value = user.email;
+                    document.getElementById('edad').value = user.edad || '';
+                    document.getElementById('telefono').value = user.telefono || '';
+                    document.getElementById('ciudad').value = user.ciudad || '';
+                    editingUserId = id;
+                    modal.style.display = 'block';
+                } else {
+                    showMessage('Error al cargar usuario: ' + user.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Error al cargar usuario: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteUser(id) {
+            if (confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
+                try {
+                    const response = await fetch(`/api/usuarios/${id}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        showMessage('Usuario eliminado exitosamente');
+                        loadUsers();
+                    } else {
+                        showMessage('Error al eliminar usuario: ' + result.error, 'error');
+                    }
+                } catch (error) {
+                    showMessage('Error al eliminar usuario: ' + error.message, 'error');
+                }
+            }
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+            editingUserId = null;
+        }
+
+        // Manejar envío del formulario
+        document.getElementById('userForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const userData = {
+                nombre: formData.get('nombre'),
+                email: formData.get('email'),
+                edad: formData.get('edad') ? parseInt(formData.get('edad')) : null,
+                telefono: formData.get('telefono'),
+                ciudad: formData.get('ciudad')
+            };
+
+            try {
+                const url = editingUserId ? `/api/usuarios/${editingUserId}` : '/api/usuarios';
+                const method = editingUserId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage(editingUserId ? 'Usuario actualizado exitosamente' : 'Usuario creado exitosamente');
+                    closeModal();
+                    loadUsers();
+                } else {
+                    showMessage('Error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+            }
+        });
+    </script>
+</body>
+</html>
